@@ -3,7 +3,6 @@ import React, { useState, useRef } from 'react';
 import Header from './components/Header';
 import LaborItemForm from './components/LaborItemForm';
 import { ContractType, ActionType, LaborEntry, FormData, STAFF_MEMBERS } from './types';
-import { generateServiceSummary } from './services/geminiService';
 
 const INITIAL_FORM_DATA: FormData = {
   workOrder: '',
@@ -85,25 +84,57 @@ const App: React.FC = () => {
     return isWorkOrderValid && areLaborCodesValid;
   };
 
+  // Simpler, manual report generator (Removed AI)
+  const generateManualReport = (data: FormData) => {
+    const date = new Date().toLocaleString('pt-BR');
+    let report = `RELATÓRIO DE EXECUÇÃO DE SERVIÇO - JXA LINHA VIVA\n`;
+    report += `Data de Emissão: ${date}\n`;
+    report += `--------------------------------------------------\n\n`;
+    report += `NÚMERO DA OBRA / OS: ${data.workOrder}\n`;
+    report += `TIPO DE CONTRATO: ${data.contractType || 'Não informado'}\n\n`;
+    
+    report += `COLABORADORES ENVOLVIDOS:\n`;
+    if (data.selectedStaff.length > 0) {
+      report += data.selectedStaff.map(s => `- ${s}`).join('\n') + '\n\n';
+    } else {
+      report += `- Nenhum colaborador selecionado\n\n`;
+    }
+
+    report += `MÃO DE OBRA EXECUTADA:\n`;
+    data.laborEntries.forEach((entry, index) => {
+      report += `${index + 1}. CÓDIGO: ${entry.code}\n`;
+      report += `   QUANTIDADE: ${entry.quantity || 0}\n`;
+      report += `   AÇÃO: ${entry.type}\n`;
+      report += `   ----------------------------\n`;
+    });
+
+    report += `\nREGISTRO FOTOGRÁFICO: ${data.photos.length} imagem(ns) anexada(s).\n`;
+    report += `\nFim do relatório.`;
+    
+    return report;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setShowErrors(true);
 
     if (!validateForm()) {
-      // Scroll to the first error
       const firstError = document.querySelector('.border-red-500');
       firstError?.scrollIntoView({ behavior: 'smooth', block: 'center' });
       return;
     }
 
     setLoading(true);
-    const result = await generateServiceSummary(formData);
-    setSummary(result);
-    setLoading(false);
-    
+    // Simulate a brief processing delay for better UX
     setTimeout(() => {
-      summaryRef.current?.scrollIntoView({ behavior: 'smooth' });
-    }, 100);
+      const result = generateManualReport(formData);
+      setSummary(result);
+      setLoading(false);
+      
+      setTimeout(() => {
+        summaryRef.current?.scrollIntoView({ behavior: 'smooth' });
+      }, 100);
+    }, 800);
   };
 
   const handleDownload = () => {
@@ -293,7 +324,7 @@ const App: React.FC = () => {
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
-                    Processando...
+                    Gerando Relatório...
                   </>
                 ) : (
                   'Finalizar e Gerar Relatório'
@@ -302,7 +333,7 @@ const App: React.FC = () => {
             </div>
           </form>
         ) : (
-          /* Gemini Result Summary View */
+          /* Summary View */
           <div ref={summaryRef} className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div className="bg-white p-8 rounded-2xl shadow-xl border-t-8 border-orange-500">
               <div className="flex items-center justify-between mb-6">
@@ -310,10 +341,10 @@ const App: React.FC = () => {
                   <span className="bg-orange-100 p-2 rounded-lg text-2xl">📋</span> 
                   Relatório de Execução
                 </h3>
-                <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-bold uppercase tracking-wider">Gerado com Sucesso</span>
+                <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-bold uppercase tracking-wider">Gerado</span>
               </div>
               
-              <div className="bg-gray-50 rounded-xl p-6 border border-gray-100 text-gray-700 whitespace-pre-wrap leading-relaxed font-medium">
+              <div className="bg-gray-50 rounded-xl p-6 border border-gray-100 text-gray-700 whitespace-pre-wrap leading-relaxed font-mono text-sm">
                 {summary}
               </div>
 
