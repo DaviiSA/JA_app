@@ -65,10 +65,12 @@ const App: React.FC = () => {
   };
 
   const removeLaborEntry = (id: string) => {
-    setFormData({
-      ...formData,
-      laborEntries: formData.laborEntries.filter(entry => entry.id !== id)
-    });
+    if (formData.laborEntries.length > 1) {
+      setFormData({
+        ...formData,
+        laborEntries: formData.laborEntries.filter(entry => entry.id !== id)
+      });
+    }
   };
 
   const startNewEntry = () => {
@@ -84,7 +86,6 @@ const App: React.FC = () => {
     return isWorkOrderValid && areLaborCodesValid;
   };
 
-  // Simpler, manual report generator (Removed AI)
   const generateManualReport = (data: FormData) => {
     const date = new Date().toLocaleString('pt-BR');
     let report = `RELATÓRIO DE EXECUÇÃO DE SERVIÇO - JXA LINHA VIVA\n`;
@@ -125,7 +126,6 @@ const App: React.FC = () => {
     }
 
     setLoading(true);
-    // Simulate a brief processing delay for better UX
     setTimeout(() => {
       const result = generateManualReport(formData);
       setSummary(result);
@@ -272,40 +272,32 @@ const App: React.FC = () => {
 
             {/* Labor Codes Section (Dynamic) */}
             <section className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-              <div className="flex justify-between items-center mb-6">
+              <div className="mb-6 flex justify-between items-center">
                 <label className="text-lg font-bold text-gray-800">Mão de Obra Executada</label>
-                <button
-                  type="button"
-                  onClick={addLaborEntry}
-                  className="flex items-center gap-2 text-sm font-bold text-orange-600 hover:text-orange-700 transition-colors"
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
-                  </svg>
-                  Adicionar Outro Código
-                </button>
               </div>
               
-              {formData.laborEntries.map((entry) => (
-                <LaborItemForm
-                  key={entry.id}
-                  entry={entry}
-                  onUpdate={updateLaborEntry}
-                  onRemove={removeLaborEntry}
-                  canRemove={formData.laborEntries.length > 1}
-                  showErrors={showErrors}
-                />
-              ))}
+              <div className="space-y-4">
+                {formData.laborEntries.map((entry) => (
+                  <LaborItemForm
+                    key={entry.id}
+                    entry={entry}
+                    onUpdate={updateLaborEntry}
+                    onRemove={removeLaborEntry}
+                    canRemove={formData.laborEntries.length > 1}
+                    showErrors={showErrors}
+                  />
+                ))}
+              </div>
 
               <button
                 type="button"
                 onClick={addLaborEntry}
-                className="w-full mt-4 py-3 border-2 border-dashed border-gray-200 rounded-xl text-gray-400 hover:border-orange-300 hover:text-orange-600 hover:bg-orange-50 transition-all font-medium flex items-center justify-center gap-2"
+                className="w-full mt-4 py-3 border-2 border-dashed border-gray-200 rounded-xl text-gray-500 hover:border-orange-400 hover:text-orange-600 hover:bg-orange-50 transition-all font-bold flex items-center justify-center gap-2"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
                 </svg>
-                Registrar mais uma mão de obra
+                Adicionar Outra Mão de Obra
               </button>
             </section>
 
