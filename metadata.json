@@ -1,0 +1,7 @@
+{
+  "name": "JA Linha Viva - Gestão de Mão de Obra",
+  "description": "Aplicativo para registro e acompanhamento de execução de serviços de mão de obra para obras da Energisa e particulares.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
